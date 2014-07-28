@@ -15,6 +15,9 @@ typedef void(^CompletionBlock)(void);
 @end
 
 @interface CWWindowContainer : UIWindow
+
+@property (nonatomic) CGFloat notificationLabelHeight;
+
 @end
 
 @interface CWStatusBarNotification : NSObject

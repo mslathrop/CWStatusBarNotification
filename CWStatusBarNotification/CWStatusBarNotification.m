@@ -19,7 +19,7 @@
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-    if (point.y > 0 && point.y < [UIApplication sharedApplication].statusBarFrame.size.height) {
+    if (point.y > 0 && point.y < self.notificationLabelHeight) {
         return [super hitTest:point withEvent:event];
     }
     
@@ -411,6 +411,7 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
             [self firstFrameChange];
         } completion:^(BOOL finished) {
             double delayInSeconds = [self.notificationLabel scrollTime];
+            self.notificationWindow.notificationLabelHeight = self.notificationLabel.frame.size.height;
             perform_block_after_delay(delayInSeconds, ^{
                 [completion invoke];
             });
