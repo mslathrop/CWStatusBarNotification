@@ -136,6 +136,7 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
 
 @property (strong, nonatomic) UITapGestureRecognizer *tapGestureRecognizer;
 @property (strong, nonatomic) CWDelayedBlockHandle dismissHandle;
+@property (strong, nonatomic) UIToolbar *notificationBlurToolbar;
 
 @end
 
@@ -159,10 +160,17 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
         self.notificationAnimationOutStyle = CWNotificationAnimationStyleBottom;
         self.notificationAnimationType = CWNotificationAnimationTypeReplace;
         self.notificationIsDismissing = NO;
+        self.notificationWindowLevel = UIWindowLevelStatusBar;
+        self.notificationUseBlurBackground = NO;
 
         // create tap recognizer
         self.tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(notificationTapped:)];
         self.tapGestureRecognizer.numberOfTapsRequired = 1;
+        
+        // create blur view toolbar
+        self.notificationBlurToolbar = [[UIToolbar alloc] init];
+        self.notificationBlurToolbar.barStyle = UIBarStyleBlackTranslucent;
+        self.notificationBlurToolbar.tintColor = [UIColor blackColor];
 
         // create default tap block
         __weak typeof(self) weakSelf = self;
@@ -295,6 +303,7 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
             self.notificationLabel.frame = [self getNotificationLabelRightFrame];
             break;
     }
+    self.notificationBlurToolbar.frame = self.notificationLabel.frame;
 }
 
 - (void)createNotificationWindow
@@ -303,7 +312,7 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
     self.notificationWindow.backgroundColor = [UIColor clearColor];
     self.notificationWindow.userInteractionEnabled = YES;
     self.notificationWindow.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.notificationWindow.windowLevel = UIWindowLevelStatusBar;
+    self.notificationWindow.windowLevel = self.notificationWindowLevel;
     self.notificationWindow.rootViewController = [UIViewController new];
 }
 
@@ -338,6 +347,7 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
             self.statusBarView.frame = [self getNotificationLabelLeftFrame];
             break;
     }
+    self.notificationBlurToolbar.frame = self.notificationLabel.frame;
 }
 
 - (void)secondFrameChange
@@ -358,6 +368,7 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
             self.statusBarView.frame = [self getNotificationLabelLeftFrame];
             break;
     }
+    self.notificationBlurToolbar.frame = self.notificationLabel.frame;
 }
 
 - (void)thirdFrameChange
@@ -377,6 +388,7 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
             self.notificationLabel.frame = [self getNotificationLabelRightFrame];
             break;
     }
+    self.notificationBlurToolbar.frame = self.notificationLabel.frame;
 }
 
 # pragma mark - display notification
@@ -395,8 +407,12 @@ static void cancel_delayed_block(CWDelayedBlockHandle delayedHandle)
         // create status bar view
         [self createStatusBarView];
 
-        // add label to window
+        // add views to window
         [self.notificationWindow.rootViewController.view addSubview:self.notificationLabel];
+        if (self.notificationUseBlurBackground) {
+            self.notificationLabel.backgroundColor = [UIColor clearColor];
+            [self.notificationWindow.rootViewController.view addSubview:self.notificationBlurToolbar];
+        }
         [self.notificationWindow.rootViewController.view bringSubviewToFront:self.notificationLabel];
         [self.notificationWindow setHidden:NO];
 
